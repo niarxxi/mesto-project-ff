@@ -30,3 +30,5 @@ const initialCards = [
       alt: "Фото медведя"
     }
 ];
+
+export { initialCards };
