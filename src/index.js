@@ -1,5 +1,5 @@
 import './pages/index.css';
-import { createCard, deleteCard, likeCard } from './components/card.js'
+import { createCard, deleteCard, handleCardLike } from './components/card.js'
 import { openModal, closeModalClickOverlay, closeModal } from './components/modal.js'
 import { enableValidation, clearValidation } from './components/validation.js'
 import { 
@@ -8,8 +8,6 @@ import {
   editProfileInfo, 
   addNewCard, 
   deleteCardApi,
-  addLikeApi,
-  deleteLikeApi,
   updateAvatarApi
 } from './components/api.js';
 
@@ -49,30 +47,10 @@ const validationConfig = {
 
 let userId;
 
-function handleCardLike(event, cardId, likeCountElement) {
-  const isLiked = event.target.classList.contains('card__like-button_is-active');
-  
-  if (isLiked) {
-    deleteLikeApi(cardId)
-      .then(updatedCard => {
-        event.target.classList.remove('card__like-button_is-active');
-        likeCountElement.textContent = updatedCard.likes.length;
-      })
-      .catch(err => console.error('Ошибка при снятии лайка:', err));
-  } else {
-    addLikeApi(cardId)
-      .then(updatedCard => {
-        event.target.classList.add('card__like-button_is-active');
-        likeCountElement.textContent = updatedCard.likes.length;
-      })
-      .catch(err => console.error('Ошибка при постановке лайка:', err));
-  }
-}
-
 function handleCardDelete(cardId) {
   openModal(popupTypeDeleteCard); 
   const yesButton = document.querySelector('.popup__button_type_yes');
-  yesButton.addEventListener('click', () => {
+  yesButton.onclick = () => {
     deleteCardApi(cardId)
       .then(() => {
         const cardElement = document.querySelector(`.card[data-id="${cardId}"]`);
@@ -85,7 +63,7 @@ function handleCardDelete(cardId) {
         console.error('Ошибка при удалении карточки:', err);
         closeModal(popupTypeDeleteCard);
       });
-  }); 
+  }; 
 }
 
 function openPopupCardImage(cardData) {
@@ -163,6 +141,8 @@ function handleNewCardFormSubmit(event) {
       openPopupCardImage: openPopupCardImage 
     }));
     popupCardForm.reset();
+    button.disabled = true; 
+    button.classList.add(validationConfig.inactiveButtonClass);
     closeModal(popupTypeNewCard);
     button.textContent = 'Создать';
   })

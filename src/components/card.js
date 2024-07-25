@@ -1,3 +1,4 @@
+import { deleteCardApi, addLikeApi, deleteLikeApi } from './api.js';
 // @todo: Темплейт карточки
 const cardTemplate = document.querySelector('#card-template').content;
 // @todo: Функция создания карточки
@@ -34,11 +35,36 @@ function createCard({ userId, cardData, deleteCard, likeCard, openPopupCardImage
 
 // @todo: Функция удаления карточки
 function deleteCard(cardId) {
-  handleCardDelete(cardId);
+  deleteCardApi(cardId)
+    .then(() => {
+      const cardElement = document.querySelector(`.card[data-id="${cardId}"]`);
+      if (cardElement) {
+        cardElement.remove();
+      }
+    })
+    .catch(err => {
+      console.error('Ошибка при удалении карточки:', err);
+    });
 };
 
-function likeCard(event, cardId, likeCountElement) {
-  handleCardLike(event, cardId, likeCountElement);
+function handleCardLike(event, cardId, likeCountElement) {
+  const isLiked = event.target.classList.contains('card__like-button_is-active');
+
+  if (isLiked) {
+    deleteLikeApi(cardId)
+      .then(updatedCard => {
+        event.target.classList.remove('card__like-button_is-active');
+        likeCountElement.textContent = updatedCard.likes.length;
+      })
+      .catch(err => console.error('Ошибка при снятии лайка:', err));
+  } else {
+    addLikeApi(cardId)
+      .then(updatedCard => {
+        event.target.classList.add('card__like-button_is-active');
+        likeCountElement.textContent = updatedCard.likes.length;
+      })
+      .catch(err => console.error('Ошибка при постановке лайка:', err));
+  }
 }
 
-export { createCard, deleteCard, likeCard }
+export { createCard, deleteCard, handleCardLike }
